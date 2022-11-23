@@ -1,3 +1,6 @@
+"""
+Config
+"""
 import json
 
 
@@ -11,7 +14,7 @@ class Config:
         json_file = self.load_json(json_path)
         for key, value in json_file.items():
             setattr(self, key, value)
-    
+
     def load_json(self, json_path):
         """
         Load json file from given json_path
