@@ -1,0 +1,57 @@
+{
+    "exp_name": "MLP_no_filter",
+    "save_dir": "../experiments",
+    "no_filter": true,
+    "metrics": "ndcg@5,ndcg@10,hit@5,hit@10",
+    "dataset": "MovieLens1MDataset",
+    "dataset_dir": "MovieLens1M",
+    "dataset_path": "../Fair-User-Representations-in-Recommender-Systems/datasets",
+    "train_datagen_kwargs": {
+        "batch_size": 1024,
+        "num_neg": 1
+    },
+    "vt_datagen_kwargs": {
+        "batch_size": 1024,
+        "num_neg": 100
+    },
+    "rec_model_name": "PMF",
+    "disc_model_name": "MovieLens1MDiscriminatorModel",
+    "rec_model_kwargs": {
+        "u_vector_size": 64,
+        "i_vector_size": 64
+    },
+    "disc_model_kwargs": {
+        "u_vector_size": 64
+    },
+    "load_model_flag": false,
+    "train_rec_model": true,
+    "train_rec_model_kwargs": {
+        "no_filter": "$no_filter",
+        "metrics": "ndcg@5,ndcg@10,hit@5,hit@10",
+        "reg_weight": 20,
+        "epoch": 1,
+        "batch_size": 1024,
+        "disc_steps": 10,
+        "num_worker": 1,
+        "check_epoch": 1,
+        "l2_weight": 1e-4,
+        "learning_rate": 0.01
+    },
+    "skip_eval": 0,
+    "eval_discriminator": true,
+    "disc_dataset": "DiscriminatorDataset",
+    "binary_disc_model_name": "MovieLens1MBinaryAttacker",
+    "multi_disc_model_name": "MovieLens1MMultiClassAttacker",
+    "upd_disc_model_kwargs": {
+        "u_vector_size": 64
+    },
+    "load_attacker_model_flag": false,
+    "attack_disc_model_kwargs": {
+        "no_filter": "$no_filter",
+        "num_worker": 1,
+        "disc_epoch": 10,
+        "check_epoch": 1,
+        "lr_attack": 0.001,
+        "l2_attack": 1e-4
+    }
+}
