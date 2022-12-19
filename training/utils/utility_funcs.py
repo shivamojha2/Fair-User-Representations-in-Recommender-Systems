@@ -21,7 +21,7 @@ def set_logging(save_dir: str):
         stream=sys.stdout,
         level=logging.INFO,
         format=frmat,
-        datefmt="[%y%m%d %H:%M:%S]",
+        datefmt="[%y-%m-%d %H:%M:%S]",
     )
 
     fh = logging.FileHandler(f"{save_dir}/logs.txt")
