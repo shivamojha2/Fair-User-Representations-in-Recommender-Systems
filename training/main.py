@@ -188,20 +188,22 @@ def fair_user_rec_sys(config: Config):
 
     test_result_dict = dict()
     if config.no_filter:
-        test_result = evaluate(
+        test_result,group_scores = evaluate(
             rec_model, test_data, (config.metrics).lower().split(",")
         )
+        logging.info(f"Group wise scores for each feature-{group_scores}")
         logging.info(
             "Test After Training = %s ",
             (format_metric(test_result))
             + ",".join((config.metrics).lower().split(",")),
         )
     else:
-        test_result, test_result_dict = eval_multi_combination(
+        test_result, test_result_dict,group_scores = eval_multi_combination(
             rec_model,
             test_data,
             config.metrics,
         )
+        logging.info(f"Group wise scores for each feature-{group_scores}")
         logging.info(
             "Test Data Performance After Training:\t Average: %s ",
             (format_metric(test_result))

@@ -72,13 +72,15 @@ def eval_multi_combination(model, data, metrics, fix_one=False):
         mask_list = [mask_list[1]]
     result_dict = {}
     acc_result = None
+    final_grp_wise_result=defaultdict(list)
+
     for mask in mask_list:
         mask = np.asarray(mask)
         feature_idx = np.where(mask == 1)[0]
         f_name_list = [feature_info[i + 1].name for i in feature_idx]
         f_name = " ".join(f_name_list)
 
-        cur_result = (
+        cur_result,grp_wise_result = (
             evaluate(model, data, metrics, mask)
             if data is not None
             else [-1.0] * len(metrics)
@@ -90,11 +92,19 @@ def eval_multi_combination(model, data, metrics, fix_one=False):
         )
 
         result_dict[f_name] = cur_result
+        for feature in ['age','gender','occupation']:
+                final_grp_wise_result[feature]= np.array(grp_wise_result[feature]) if final_grp_wise_result[feature] ==[] else np.add(final_grp_wise_result[feature] , np.asarray(grp_wise_result[feature]))
+        # print('multi_eval')
+        # print(final_grp_wise_result)
+
+    for feature in ['age','gender','occupation']:
+        final_grp_wise_result[feature]/= len(mask_list)
+
 
     if acc_result is not None:
         acc_result /= len(mask_list)
 
-    return list(acc_result), result_dict
+    return list(acc_result), result_dict, final_grp_wise_result
 
 
 @torch.no_grad()
@@ -119,20 +129,49 @@ def evaluate(model, batches, metrics, mask=None):
         out_dict = model.predict(batch, mask)
         prediction = out_dict["prediction"]
         labels = batch["label"].cpu()
+        #[gender, age, occ]
+        genders = batch['features'][:, 0].cpu()
+        ages = batch['features'][:, 1].cpu()
+        occs = batch['features'][:, 2].cpu()
+        users = batch['X'][:, 0].cpu()
         sample_ids = batch["X"][:, 2].cpu()
         assert len(labels) == len(prediction)
         assert len(sample_ids == len(prediction))
         prediction = prediction.cpu().numpy()
-        data_dict = {"label": labels, "sample_id": sample_ids}
+        # data_dict = {"label": labels, "sample_id": sample_ids}
+        data_dict = {"label": labels, "sample_id": sample_ids, 'users': users, 'genders': genders,'ages': ages, 'occs': occs}
         results = evaluate_method(prediction, data_dict, metrics=metrics)
         for key in results:
             result_dict[key].extend(results[key])
 
+    group_wise_df = pd.DataFrame.from_dict(result_dict)
+    group_scores=defaultdict(list)
+    # age-wise calculation
+    age_df = group_wise_df.groupby('ages')
+    for uid, group in age_df:
+        group_scores['age'].append([group['ndcg@5'].agg(np.mean),group['ndcg@10'].agg(np.mean),group['hit@5'].agg(np.mean),group['hit@10'].agg(np.mean)])
+
+    #gender-wise calculations
+    gender_df = group_wise_df.groupby('genders')
+    for uid, group in gender_df:
+        group_scores['gender'].append([group['ndcg@5'].agg(np.mean),group['ndcg@10'].agg(np.mean),group['hit@5'].agg(np.mean),group['hit@10'].agg(np.mean)])
+
+    #occupation-wise calculations
+    occ_df = group_wise_df.groupby('occs')
+    for _ , group in occ_df:
+        group_scores['occupation'].append([group['ndcg@5'].agg(np.mean),group['ndcg@10'].agg(np.mean),group['hit@5'].agg(np.mean),group['hit@10'].agg(np.mean)])
+
+    # print(group_scores)
+    group_wise_df = pd.DataFrame(None)
+    age_df = pd.DataFrame(None)
+    gender_df = pd.DataFrame(None)
+    occ_df = pd.DataFrame(None)
+        
     evaluations = []
     for metric in metrics:
         evaluations.append(np.average(result_dict[metric]))
 
-    return evaluations
+    return evaluations,group_scores
 
 
 def evaluate_method(p, data, metrics):
@@ -158,8 +197,23 @@ def evaluate_method(p, data, metrics):
             df["sample_id"] = data["sample_id"]
             df["p"] = p
             df["l"] = label
+            df['users'] = data['users']
+            df['genders'] = data['genders']
+            df['ages'] = data['ages']
+            df['occs'] = data['occs']
             df = df.sort_values(by="p", ascending=False)
             df_group = df.groupby("sample_id")
+            ages=[]
+            genders=[]
+            occs=[]
+            for _ , group in df_group:
+                ages.append(int(group['ages'].agg(np.mean)))
+                genders.append(int(group['genders'].agg(np.mean)))
+                occs.append(int(group['occs'].agg(np.mean)))
+            evaluations['ages']= ages
+            evaluations['genders']= genders
+            evaluations['occs']= occs
+
             if metric.startswith("ndcg@"):
                 ndcgs = []
                 for uid, group in df_group:

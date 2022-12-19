@@ -297,25 +297,25 @@ class TrainModel:
                 if epoch >= skip_eval:
                     valid_result_dict, test_result_dict = None, None
                     if self.no_filter:
-                        valid_result = (
+                        valid_result,grp_scores = (
                             evaluate(model, validation_data, self.metrics)
                             if validation_data is not None
                             else [-1.0] * len(self.metrics)
                         )
-                        test_result = (
+                        test_result,grp_scores = (
                             evaluate(model, test_data, self.metrics)
                             if test_data is not None
                             else [-1.0] * len(self.metrics)
                         )
                     else:
-                        valid_result, valid_result_dict = (
+                        valid_result, valid_result_dict,grp_scores = (
                             eval_multi_combination(
                                 model, validation_data, self.metrics, fix_one
                             )
                             if validation_data is not None
                             else [-1.0] * len(self.metrics)
                         )
-                        test_result, test_result_dict = (
+                        test_result, test_result_dict,grp_scores = (
                             eval_multi_combination(
                                 model, test_data, self.metrics, fix_one
                             )
@@ -330,6 +330,7 @@ class TrainModel:
                     self.disc_results.append(output_dict["d_score"])
 
                     if self.no_filter:
+                        logging.info(f"Group-wise scores {grp_scores}")
                         logging.info(
                             "Epoch %5d [%.1f s]\n validation= %s test= %s [%.1f s] "
                             % (
@@ -342,6 +343,7 @@ class TrainModel:
                             + ",".join(self.metrics)
                         )
                     else:
+                        logging.info(f"Group-wise scores {grp_scores}")
                         logging.info(
                             "Epoch %5d [%.1f s]\t Average: validation= %s test= %s [%.1f s] "
                             % (
