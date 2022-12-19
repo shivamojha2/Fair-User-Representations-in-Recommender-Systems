@@ -316,10 +316,11 @@ class DiscriminatorDataset:
         path,
         dataset_name,
         stage,
+        batch_size=1000,
         sep="\t",
         seq_sep=",",
         test_ratio=0.1,
-        batch_size=1000,
+        num_neg=1,
     ):
         self.sep = sep
         self.seq_sep = seq_sep
