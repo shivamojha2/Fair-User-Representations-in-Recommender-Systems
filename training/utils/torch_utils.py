@@ -9,46 +9,15 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 
-def move_to_device(
-    obj: Union[dict, list, torch.Tensor], device: torch.device
-) -> Union[dict, list, torch.Tensor]:
+def move_batch_to_gpu(batch):
     """
-    Move objects to device
-
-    Args:
-        obj (Union[dict, list, torch.Tensor]): Object to move to device
-        device (torch.device): Hardware device
-
-    Returns:
-        obj: Same obj as input with tensors moved to device
+    Move batch to gpu device
     """
-    if torch.is_tensor(obj):
-        return obj.to(device)
-    elif isinstance(obj, dict):
-        result = {}
-        for k, v in obj.items():
-            result[k] = move_to_device(v, device)
-        return result
-    elif isinstance(obj, list):
-        result = []
-        for v in obj:
-            result.append(move_to_device(v, device))
-        return result
-    else:
-        raise TypeError("Invalid type error")
-
-
-def add_scalars(writer: SummaryWriter, iteration: int, prefix: str, **kwargs):
-    """
-    Add scalars to tensorboard
-
-    Args:
-        writer (SummaryWriter): Instance of pytorch SummaryWriter
-        iteration (int): Current iteration
-        prefix (str): Prefix for scalar group
-    """
-    for metric_name, value in kwargs.items():
-        writer.add_scalar("{}/{}".format(prefix, metric_name), value, iteration)
+    if torch.cuda.device_count() > 0:
+        for c in batch:
+            if type(batch[c]) is torch.Tensor:
+                batch[c] = batch[c].cuda()
+    return batch
 
 
 def save_model(epoch, model, optimizer, scheduler, save_dir):

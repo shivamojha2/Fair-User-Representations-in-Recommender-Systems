@@ -1,5 +1,7 @@
 """
 Information Retrieval metrics
+Useful reference:
+http://www.cs.utexas.edu/~mooney/ir-course/slides/Evaluation.ppt
 """
 import numpy as np
 
