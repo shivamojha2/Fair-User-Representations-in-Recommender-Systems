@@ -93,7 +93,7 @@ class BaseRecModel(nn.Module):
             return sequential
 
         num_features = len(self.feature_columns)
-        self.filter_num = 2**num_features
+        self.filter_num = num_features
         self.num_features = num_features
         self.filter_dict = nn.ModuleDict(
             {
@@ -104,10 +104,16 @@ class BaseRecModel(nn.Module):
 
     def apply_filter(self, vectors, filter_mask):
         if np.sum(filter_mask) != 0:
-            filter_mask = np.asarray(filter_mask)
-            idx = filter_mask.dot(2 ** np.arange(filter_mask.size))
-            sens_filter = self.filter_dict[str(idx)]
-            result = sens_filter(vectors)
+            result = None
+            for idx, val in enumerate(filter_mask):
+                if val != 0:
+                    sens_filter = self.filter_dict[str(idx + 1)]
+                    result = (
+                        sens_filter(vectors)
+                        if result is None
+                        else result + sens_filter(vectors)
+                    )
+            result = result / np.sum(filter_mask)  # average the embedding
         else:
             result = vectors
         return result
