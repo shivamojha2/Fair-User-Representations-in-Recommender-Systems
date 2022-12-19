@@ -1,10 +1,7 @@
 """
-DataGenZoo
-
-author: Shivam Ojha
+Datagen Zoo
 """
-from datagen import DiscriminatorData
-from torch.utils.data import DataLoader
+from datagen import DiscriminatorDataset, MovieLens1MDataset
 
 
 class DataGenZoo:
@@ -12,29 +9,11 @@ class DataGenZoo:
     DataGenZoo
     """
 
-    datagen_dict = {"DiscriminatorData": DiscriminatorData}
+    datagen_dict = {
+        "MovieLens1MDataset": MovieLens1MDataset,
+        "DiscriminatorDataset": DiscriminatorDataset,
+    }
 
-    def _new_(self, cls, name, data, **kwargs):
+    def __new__(cls, name, path, dataset, stage, batch_size, num_neg):
         assert name in cls.datagen_dict.keys(), "Invalid data generator name"
-        return cls.datagen_dict[name](data=data, **kwargs)
-
-
-class DataCreator:
-    """
-    DataCreator
-    """
-
-    @staticmethod
-    def load_datagen(df, datagen_name, datagen_kwargs):
-        return DataGenZoo(datagen_name, df, **datagen_kwargs)
-
-    @staticmethod
-    def load_dataloader(datagen, dataloader_kwargs):
-        return DataLoader(dataset=datagen, **dataloader_kwargs)
-
-    @staticmethod
-    def load_train_val(config):
-        return (
-            DataCreator.load_dataloader(config, "train"),
-            DataCreator.load_dataloader(config, "val"),
-        )
+        return cls.datagen_dict[name](path, dataset, stage, batch_size, num_neg)
