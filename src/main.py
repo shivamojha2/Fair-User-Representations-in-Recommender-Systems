@@ -10,14 +10,15 @@ from collections import OrderedDict, namedtuple
 import numpy as np
 import pandas as pd
 import torch
+from torch.utils.data import DataLoader
+
 from config import Config
 from datagen_zoo import DataGenZoo
 from discriminator_model_zoo import DiscriminatorModelZoo
-from recommender_model_zoo import RecommenderModelZoo
-from utils.utility_funcs import save_file, set_logging, format_metric
-from train import TrainModel, TrainDisc
-from torch.utils.data import DataLoader
 from evals import *
+from recommender_model_zoo import RecommenderModelZoo
+from train import TrainDisc, TrainModel
+from utils.utility_funcs import format_metric, save_file, set_logging
 
 Feature = namedtuple("Feature", ["num_class", "label_min", "label_max", "name"])
 
@@ -188,20 +189,22 @@ def fair_user_rec_sys(config: Config):
 
     test_result_dict = dict()
     if config.no_filter:
-        test_result = evaluate(
+        test_result, group_scores = evaluate(
             rec_model, test_data, (config.metrics).lower().split(",")
         )
+        logging.info(f"Group wise scores for each feature-{group_scores}")
         logging.info(
             "Test After Training = %s ",
             (format_metric(test_result))
             + ",".join((config.metrics).lower().split(",")),
         )
     else:
-        test_result, test_result_dict = eval_multi_combination(
+        test_result, test_result_dict, group_scores = eval_multi_combination(
             rec_model,
             test_data,
-            config.metrics,
+            (config.metrics).lower().split(","),
         )
+        logging.info(f"Group wise scores for each feature-{group_scores}")
         logging.info(
             "Test Data Performance After Training:\t Average: %s ",
             (format_metric(test_result))
