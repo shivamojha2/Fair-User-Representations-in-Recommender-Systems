@@ -10,7 +10,7 @@ The dependencies are mentioned in `requirements.txt`.
 
 ## Model architecture
 
-![image](https://github.com/shivamojha2/Fair-User-Representations-in-Recommender-Systems/blob/main/static/images/architecture.jpg)
+![image](https://github.com/shivamojha2/Fair-User-Representations-in-Recommender-Systems/blob/main/static/images/architecture.png)
 
 ## Code execution
 
