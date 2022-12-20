@@ -1,6 +1,6 @@
 # Fair-User-Representations-in-Recommender-Systems
 
-COMS 6998 Fair &amp; Robust Algorithms Final Project
+This repository is on a project to try and create a fair user representation in terms of its embedding to ensure that the pre-existing demographic biases that are seen and prevalent in these systems can be mitigated while maintaining the recommendation scores. This idea of personalized user fairness in recommendation is introduced here in this project and the idea to create feature-independent embeddings using an adversarial approach has been explored. The idea is to then test this approach with various recommender models to see if this representation is robust.
 
 ## Code and system dependencies
 
