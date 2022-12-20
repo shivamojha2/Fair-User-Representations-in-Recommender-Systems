@@ -1,5 +1,5 @@
 {
-    "exp_name": "MLP_no_filter",
+    "exp_name": "MLP_with_filter",
     "save_dir": "/Users/shivamojha/Files/Projects/FuRRs/experiments",
     "no_filter": false,
     "metrics": "ndcg@5,ndcg@10,hit@5,hit@10",
